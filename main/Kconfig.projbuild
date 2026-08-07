@@ -18,4 +18,11 @@ config MQTT_BROKER_URI
         help
             this should include the port as well (eg: 1883)
 
+config  MQTT_DEVICE_ID
+    int "ID for device"
+    range 0 9999
+    default 1
+        help
+            this needs to be unique for each client device
+
 endmenu
