@@ -9,3 +9,13 @@ config WIFI_PASSWORD
     default "no password"
 
 endmenu
+
+menu "MQTT Connect Config"
+
+config MQTT_BROKER_URI
+    string "Enter URI of the MQTT broker to connect to"
+    default "mqtt://test.mosquitto.org:1883"
+        help
+            this should include the port as well (eg: 1883)
+
+endmenu
