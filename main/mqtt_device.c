@@ -2,23 +2,31 @@
 #include "mqtt_client.h"
 #include "esp_log.h"
 #include "cJSON.h"
+#include "device_tasks.h"
 
 esp_mqtt_client_handle_t mqtt_device_client;
 
 static const char *TAG = "MQTT";
 char commands_topic[50];
-char temperature_state_topic[75];
-char temperature_value_topic[75];
+char temperature_cmd_state_topic[75];
+char temperature_cmd_value_topic[75];
+char temperature_device_state_topic[75];
+char temperature_device_value_topic[75];
 
-int mqtt_send(const char *topic, const char *payload, bool retain)
+int mqtt_device_send(const char *topic, const char *payload, bool retain)
 {
     return esp_mqtt_client_publish(mqtt_device_client, topic, payload, strlen(payload), 1, retain);
+}
+
+int mqtt_send_device_temperature_value(const char *payload, bool retain)
+{
+    return mqtt_device_send(temperature_device_value_topic, payload, retain);
 }
 
 void mqtt_topic_controller(esp_mqtt_event_handle_t event)
 {
     cJSON *payload;
-    if (strcmp(event->topic, temperature_state_topic) == 0)
+    if (strcmp(event->topic, temperature_cmd_state_topic) == 0)
     {
         ESP_LOGI(TAG, "temperature state endpoint hit");
         // temperature state
@@ -29,6 +37,14 @@ void mqtt_topic_controller(esp_mqtt_event_handle_t event)
             cJSON *temp_state_json = cJSON_GetObjectItem(payload, "state");
             bool is_on = cJSON_IsTrue(temp_state_json);
             ESP_LOGI(TAG, "Device state: %s", is_on ? "on" : "off");
+            if (is_on)
+            {
+                start_sending_temperature();
+            }
+            else
+            {
+                stop_sending_temperature();
+            }
         }
         else
         {
@@ -37,7 +53,7 @@ void mqtt_topic_controller(esp_mqtt_event_handle_t event)
 
         cJSON_Delete(payload);
     }
-    else if (strcmp(event->topic, temperature_value_topic) == 0)
+    else if (strcmp(event->topic, temperature_cmd_value_topic) == 0)
     {
         // temperature value
         ESP_LOGI(TAG, "temperature value endpoint hit");
@@ -100,8 +116,10 @@ void mqtt_any_event_handler(void *event_handler_arg,
 void init_dynamic_mqtt_topics(void)
 {
     sprintf(commands_topic, "HomeHelper/hub/commands/%d/#", CONFIG_MQTT_DEVICE_ID);
-    sprintf(temperature_state_topic, "HomeHelper/hub/commands/%d/temperature/state", CONFIG_MQTT_DEVICE_ID);
-    sprintf(temperature_value_topic, "HomeHelper/hub/commands/%d/temperature/value", CONFIG_MQTT_DEVICE_ID);
+    sprintf(temperature_cmd_state_topic, "HomeHelper/hub/commands/%d/temperature/state", CONFIG_MQTT_DEVICE_ID);
+    sprintf(temperature_cmd_value_topic, "HomeHelper/hub/commands/%d/temperature/value", CONFIG_MQTT_DEVICE_ID);
+    sprintf(temperature_device_state_topic, "HomeHelper/hub/device/%d/temperature/state", CONFIG_MQTT_DEVICE_ID);
+    sprintf(temperature_device_value_topic, "HomeHelper/hub/device/%d/temperature/value", CONFIG_MQTT_DEVICE_ID);
 }
 
 void init_mqtt(void)
@@ -119,6 +137,6 @@ void init_mqtt(void)
 
     mqtt_device_client = esp_mqtt_client_init(&esp_mqtt_client_config);
 
-    esp_mqtt_client_register_event(mqtt_device_client, ESP_EVENT_ANY_ID, mqtt_any_event_handler, NULL);
-    esp_mqtt_client_start(mqtt_device_client);
+    ESP_ERROR_CHECK(esp_mqtt_client_register_event(mqtt_device_client, ESP_EVENT_ANY_ID, mqtt_any_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_mqtt_client_start(mqtt_device_client));
 }
