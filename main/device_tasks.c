@@ -27,7 +27,7 @@ void send_temperature(void)
     if (i2c_res == ESP_OK)
     {
         cJSON *payload_json = cJSON_CreateObject();
-        cJSON_AddNumberToObject(payload_json, "temperature", temperature);
+        cJSON_AddNumberToObject(payload_json, "fahrenheit", temperature);
         char *payload = cJSON_Print(payload_json);
         cJSON_Delete(payload_json);
         mqtt_send_device_temperature_value(payload, false);
