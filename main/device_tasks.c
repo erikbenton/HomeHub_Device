@@ -8,6 +8,7 @@
 #include "cJSON.h"
 #include "i2c_lm75a.h"
 #include "mqtt_device.h"
+#include "spi_sd_card.h"
 
 /*
 
@@ -62,6 +63,60 @@ void stop_sending_temperature(void)
     {
         ESP_LOGI(TAG, "Unable to stop task.");
     }
+}
+
+void read_device_config(const char *file_name, device_config_t *device_config)
+{
+    const uint16_t size = 255 * 5;
+    char config[size];
+    char *file_path = (char *)malloc(size);
+    sprintf(file_path, "/store/%s", file_name);
+
+    // read the config file
+    sd_read_file(file_path, config, size);
+
+    // parse the JSON string
+    cJSON *payload = cJSON_Parse(config);
+
+    if (payload != NULL)
+    {
+        cJSON *item_payload;
+
+        // get the id
+        item_payload = cJSON_GetObjectItem(payload, "id");
+        device_config->id = item_payload != NULL ? cJSON_GetNumberValue(item_payload) : CONFIG_MQTT_DEVICE_ID;
+
+        // get the name
+        item_payload = cJSON_GetObjectItem(payload, "name");
+        sprintf(device_config->name, "%s", item_payload != NULL ? cJSON_GetStringValue(item_payload) : CONFIG_DEVICE_NAME);
+
+        // get the location
+        item_payload = cJSON_GetObjectItem(payload, "location");
+        sprintf(device_config->location, "%s", item_payload != NULL ? cJSON_GetStringValue(item_payload) : CONFIG_DEVICE_LOCATION);
+
+        // get the wifi_ssid
+        item_payload = cJSON_GetObjectItem(payload, "wifi_ssid");
+        sprintf(device_config->wifi_ssid, "%s", item_payload != NULL ? cJSON_GetStringValue(item_payload) : CONFIG_WIFI_SSID);
+
+        // get the wifi_password
+        item_payload = cJSON_GetObjectItem(payload, "wifi_password");
+        sprintf(device_config->wifi_password, "%s", item_payload != NULL ? cJSON_GetStringValue(item_payload) : CONFIG_WIFI_PASSWORD);
+    }
+    else
+    {
+        device_config->id = CONFIG_MQTT_DEVICE_ID;
+        sprintf(device_config->name, "%s", CONFIG_DEVICE_NAME);
+        sprintf(device_config->location, "%s", CONFIG_DEVICE_LOCATION);
+        sprintf(device_config->wifi_ssid, "%s", CONFIG_WIFI_SSID);
+        sprintf(device_config->wifi_password, "%s", CONFIG_WIFI_PASSWORD);
+    }
+
+    free(file_path);
+
+    ESP_LOGI(TAG, "Device ID: %d", device_config->id);
+    ESP_LOGI(TAG, "Device Name: %s", device_config->name);
+    ESP_LOGI(TAG, "Device Location: %s", device_config->location);
+    ESP_LOGI(TAG, "Device WiFi SSID: %s", device_config->wifi_ssid);
 }
 
 void init_tasks(void)

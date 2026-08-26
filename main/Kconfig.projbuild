@@ -10,6 +10,18 @@ config WIFI_PASSWORD
 
 endmenu
 
+menu "Device Configuration"
+
+config DEVICE_NAME
+    string "Enter name for the device"
+    default "Temperature Device"
+
+config DEVICE_LOCATION
+    string "Enter the location of the device"
+    default "Office"
+
+endmenu
+
 menu "MQTT Connect Config"
 
 config MQTT_BROKER_URI

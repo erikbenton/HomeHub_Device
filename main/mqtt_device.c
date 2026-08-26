@@ -5,6 +5,7 @@
 #include "device_tasks.h"
 
 esp_mqtt_client_handle_t mqtt_device_client;
+device_config_t *device_config;
 
 static const char *TAG = "MQTT";
 char commands_topic[50];
@@ -26,9 +27,9 @@ int mqtt_send_device_temperature_value(const char *payload, bool retain)
 int mqtt_send_device_hello(bool retain)
 {
     cJSON *payload_json = cJSON_CreateObject();
-    cJSON_AddNumberToObject(payload_json, "id", CONFIG_MQTT_DEVICE_ID);
-    cJSON_AddStringToObject(payload_json, "name", "Temperature Device 1");
-    cJSON_AddStringToObject(payload_json, "location", "Office");
+    cJSON_AddNumberToObject(payload_json, "id", device_config->id);
+    cJSON_AddStringToObject(payload_json, "name", device_config->name);
+    cJSON_AddStringToObject(payload_json, "location", device_config->location);
     char *payload = cJSON_Print(payload_json);
     cJSON_Delete(payload_json);
     return mqtt_device_send("HomeHub/hello", payload, retain);
@@ -144,8 +145,10 @@ void init_dynamic_mqtt_topics(void)
     sprintf(temperature_device_value_topic, "HomeHub/hub/device/%d/temperature/value", CONFIG_MQTT_DEVICE_ID);
 }
 
-void init_mqtt(void)
+void init_mqtt(device_config_t *init_device_config)
 {
+    device_config = init_device_config;
+
     // MQTT client config
     esp_mqtt_client_config_t esp_mqtt_client_config = {
         .broker.address.uri = CONFIG_MQTT_BROKER_URI};
