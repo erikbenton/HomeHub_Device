@@ -48,7 +48,7 @@ void sd_read_file(const char *path, char *buffer, int buff_size)
 {
     ESP_LOGI(TAG, "reading file %s", path);
     FILE *file = fopen(path, "r");
-    memset(buffer, 0, sizeof(buffer));
+    memset(buffer, 0, buff_size);
     fgets(buffer, buff_size - 1, file);
     fclose(file);
     ESP_LOGI(TAG, "file contains: %s", buffer);
@@ -60,4 +60,25 @@ void sd_write_file(char *path, const char *content)
     FILE *file = fopen(path, "w");
     fputs(content, file);
     fclose(file);
+}
+
+void sd_read_full_file(const char *path, char *buffer, long buff_size)
+{
+    ESP_LOGI(TAG, "reading file %s", path);
+    FILE *file = fopen(path, "r");
+
+    // determine file length
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    rewind(file);
+
+    // empty out the buffer
+    memset(buffer, 0, buff_size);
+
+    // read the full length of the file
+    size_t read_bytes = fread(buffer, sizeof(char), length, file);
+    buffer[read_bytes] = '\0';
+
+    fclose(file);
+    ESP_LOGI(TAG, "file contains: %s", buffer);
 }

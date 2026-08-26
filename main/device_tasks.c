@@ -67,13 +67,16 @@ void stop_sending_temperature(void)
 
 void read_device_config(const char *file_name, device_config_t *device_config)
 {
+    // put this config on the heap temporarily
     const uint16_t size = 255 * 5;
-    char config[size];
-    char *file_path = (char *)malloc(size);
+    char *config = (char *)malloc(size);
+    char *file_path = (char *)malloc(255);
+
+    // incase the user has a different file name
     sprintf(file_path, "/store/%s", file_name);
 
     // read the config file
-    sd_read_file(file_path, config, size);
+    sd_read_full_file(file_path, config, size);
 
     // parse the JSON string
     cJSON *payload = cJSON_Parse(config);
@@ -104,6 +107,7 @@ void read_device_config(const char *file_name, device_config_t *device_config)
     }
     else
     {
+        // use the menuconfig defaults
         device_config->id = CONFIG_MQTT_DEVICE_ID;
         sprintf(device_config->name, "%s", CONFIG_DEVICE_NAME);
         sprintf(device_config->location, "%s", CONFIG_DEVICE_LOCATION);
@@ -111,8 +115,11 @@ void read_device_config(const char *file_name, device_config_t *device_config)
         sprintf(device_config->wifi_password, "%s", CONFIG_WIFI_PASSWORD);
     }
 
+    // free up the heap
+    free(config);
     free(file_path);
 
+    // print out the values being used
     ESP_LOGI(TAG, "Device ID: %d", device_config->id);
     ESP_LOGI(TAG, "Device Name: %s", device_config->name);
     ESP_LOGI(TAG, "Device Location: %s", device_config->location);
