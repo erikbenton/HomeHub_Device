@@ -36,8 +36,13 @@ int mqtt_send_device_hello(bool retain)
 
 void mqtt_topic_controller(esp_mqtt_event_handle_t event)
 {
+    if (event->topic_len == 0)
+        return;
+
+    char topic[75];
+    sprintf(topic, "%.*s", event->topic_len, event->topic);
     cJSON *payload;
-    if (strcmp(event->topic, temperature_cmd_state_topic) == 0)
+    if (strcmp(topic, temperature_cmd_state_topic) == 0)
     {
         ESP_LOGI(TAG, "temperature state endpoint hit");
         // temperature state
@@ -64,7 +69,7 @@ void mqtt_topic_controller(esp_mqtt_event_handle_t event)
 
         cJSON_Delete(payload);
     }
-    else if (strcmp(event->topic, temperature_cmd_value_topic) == 0)
+    else if (strcmp(topic, temperature_cmd_value_topic) == 0)
     {
         // temperature value
         ESP_LOGI(TAG, "temperature value endpoint hit");
@@ -90,8 +95,9 @@ void mqtt_any_event_handler(void *event_handler_arg,
 
         // subscribe to necessary topics
         esp_mqtt_client_subscribe(mqtt_device_client, commands_topic, 1);
+
         // Just get all of them for now/debug
-        esp_mqtt_client_subscribe(mqtt_device_client, "HomeHub/hub/#", 1);
+        // esp_mqtt_client_subscribe(mqtt_device_client, "HomeHub/hub/#", 1);
 
         // send "hello" message
         mqtt_send_device_hello(1);
@@ -142,11 +148,11 @@ void init_mqtt(void)
 {
     // MQTT client config
     esp_mqtt_client_config_t esp_mqtt_client_config = {
-        .broker.address.uri = CONFIG_MQTT_BROKER_URI,
-        .session.last_will = {
-            .topic = "HomeHub/device/on-chip-death",
-            .msg = "ESP32 died =(",
-            .msg_len = strlen("ESP32 died =(")}};
+        .broker.address.uri = CONFIG_MQTT_BROKER_URI};
+    // .session.last_will = {
+    //     .topic = "HomeHub/device/on-chip-death",
+    //     .msg = "ESP32 died =(",
+    //     .msg_len = strlen("ESP32 died =(")}};
 
     // initialize dynamic topics
     init_dynamic_mqtt_topics();
