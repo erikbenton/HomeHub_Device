@@ -8,6 +8,7 @@ esp_mqtt_client_handle_t mqtt_device_client;
 device_config_t *device_config;
 
 static const char *TAG = "MQTT";
+char hello_topic[50];
 char commands_topic[50];
 char temperature_cmd_state_topic[75];
 char temperature_cmd_value_topic[75];
@@ -32,7 +33,7 @@ int mqtt_send_device_hello(bool retain)
     cJSON_AddStringToObject(payload_json, "location", device_config->location);
     char *payload = cJSON_Print(payload_json);
     cJSON_Delete(payload_json);
-    return mqtt_device_send("HomeHub/hello", payload, retain);
+    return mqtt_device_send(hello_topic, payload, retain);
 }
 
 void mqtt_topic_controller(esp_mqtt_event_handle_t event)
@@ -97,9 +98,6 @@ void mqtt_any_event_handler(void *event_handler_arg,
         // subscribe to necessary topics
         esp_mqtt_client_subscribe(mqtt_device_client, commands_topic, 1);
 
-        // Just get all of them for now/debug
-        // esp_mqtt_client_subscribe(mqtt_device_client, "HomeHub/hub/#", 1);
-
         // send "hello" message
         mqtt_send_device_hello(1);
         break;
@@ -136,13 +134,14 @@ void mqtt_any_event_handler(void *event_handler_arg,
     }
 }
 
-void init_dynamic_mqtt_topics(void)
+void init_dynamic_mqtt_topics(device_config_t *device_config)
 {
-    sprintf(commands_topic, "HomeHub/hub/commands/%d/#", CONFIG_MQTT_DEVICE_ID);
-    sprintf(temperature_cmd_state_topic, "HomeHub/hub/commands/%d/temperature/state", CONFIG_MQTT_DEVICE_ID);
-    sprintf(temperature_cmd_value_topic, "HomeHub/hub/commands/%d/temperature/value", CONFIG_MQTT_DEVICE_ID);
-    sprintf(temperature_device_state_topic, "HomeHub/hub/device/%d/temperature/state", CONFIG_MQTT_DEVICE_ID);
-    sprintf(temperature_device_value_topic, "HomeHub/hub/device/%d/temperature/value", CONFIG_MQTT_DEVICE_ID);
+    sprintf(hello_topic, "HomeHub/hello/%ld", device_config->id);
+    sprintf(commands_topic, "HomeHub/hub/commands/%ld/#", device_config->id);
+    sprintf(temperature_cmd_state_topic, "HomeHub/hub/commands/%ld/temperature/state", device_config->id);
+    sprintf(temperature_cmd_value_topic, "HomeHub/hub/commands/%ld/temperature/value", device_config->id);
+    sprintf(temperature_device_state_topic, "HomeHub/hub/device/%ld/temperature/state", device_config->id);
+    sprintf(temperature_device_value_topic, "HomeHub/hub/device/%ld/temperature/value", device_config->id);
 }
 
 void init_mqtt(device_config_t *init_device_config)
@@ -153,12 +152,12 @@ void init_mqtt(device_config_t *init_device_config)
     esp_mqtt_client_config_t esp_mqtt_client_config = {
         .broker.address.uri = CONFIG_MQTT_BROKER_URI};
     // .session.last_will = {
-    //     .topic = "HomeHub/device/on-chip-death",
+    //     .topic = "HomeHub/hub/device/on-chip-death",
     //     .msg = "ESP32 died =(",
     //     .msg_len = strlen("ESP32 died =(")}};
 
     // initialize dynamic topics
-    init_dynamic_mqtt_topics();
+    init_dynamic_mqtt_topics(device_config);
 
     mqtt_device_client = esp_mqtt_client_init(&esp_mqtt_client_config);
 

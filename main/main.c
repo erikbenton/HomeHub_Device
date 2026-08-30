@@ -18,7 +18,7 @@ void app_main(void)
 
     // get device config from SD card
     device_config_t device_config;
-    read_device_config("default_config.json", &device_config);
+    read_device_config("device_config.json", &device_config);
 
     wifi_connect_init();
 
