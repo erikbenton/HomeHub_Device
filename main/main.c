@@ -3,21 +3,25 @@
 #include "wifi_connect.h"
 #include "esp_log.h"
 #include "mqtt_device.h"
-#include "i2c_lm75a.h"
 #include "device_tasks.h"
 #include "spi_sd_card.h"
+#include "temperature_sensor_driver.h"
+
+temperature_sensor_t temperature_sensor;
+lm75a_ctx_t lm75a_ctx;
+device_config_t device_config;
 
 void app_main(void)
 {
     ESP_ERROR_CHECK(nvs_flash_init());
 
-    init_i2c_lm75a();
+    lm75a_ctx.i2c_address = LM75A_DEFAULT_ADDRESS;
+    temperature_sensor_init(LM75A, &temperature_sensor, &lm75a_ctx);
 
     // init SPI SD card
     init_spi_sd_card();
 
     // get device config from SD card
-    device_config_t device_config;
     read_device_config("device_config.json", &device_config);
 
     wifi_connect_init();
@@ -31,5 +35,5 @@ void app_main(void)
 
     init_mqtt(&device_config);
 
-    init_tasks();
+    init_tasks(&temperature_sensor);
 }

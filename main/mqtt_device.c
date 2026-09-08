@@ -5,7 +5,7 @@
 #include "device_tasks.h"
 
 esp_mqtt_client_handle_t mqtt_device_client;
-device_config_t *device_config;
+device_config_t *device_cfg;
 
 static const char *TAG = "MQTT";
 char hello_topic[50];
@@ -28,9 +28,9 @@ int mqtt_send_device_temperature_value(const char *payload, bool retain)
 int mqtt_send_device_hello(bool retain)
 {
     cJSON *payload_json = cJSON_CreateObject();
-    cJSON_AddNumberToObject(payload_json, "id", device_config->id);
-    cJSON_AddStringToObject(payload_json, "name", device_config->name);
-    cJSON_AddStringToObject(payload_json, "location", device_config->location);
+    cJSON_AddNumberToObject(payload_json, "id", device_cfg->id);
+    cJSON_AddStringToObject(payload_json, "name", device_cfg->name);
+    cJSON_AddStringToObject(payload_json, "location", device_cfg->location);
     char *payload = cJSON_Print(payload_json);
     cJSON_Delete(payload_json);
     return mqtt_device_send(hello_topic, payload, retain);
@@ -146,7 +146,7 @@ void init_dynamic_mqtt_topics(device_config_t *device_config)
 
 void init_mqtt(device_config_t *init_device_config)
 {
-    device_config = init_device_config;
+    device_cfg = init_device_config;
 
     // MQTT client config
     esp_mqtt_client_config_t esp_mqtt_client_config = {
@@ -157,7 +157,7 @@ void init_mqtt(device_config_t *init_device_config)
     //     .msg_len = strlen("ESP32 died =(")}};
 
     // initialize dynamic topics
-    init_dynamic_mqtt_topics(device_config);
+    init_dynamic_mqtt_topics(device_cfg);
 
     mqtt_device_client = esp_mqtt_client_init(&esp_mqtt_client_config);
 

@@ -6,9 +6,9 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "cJSON.h"
-#include "i2c_lm75a.h"
 #include "mqtt_device.h"
 #include "spi_sd_card.h"
+#include "temperature_sensor_driver.h"
 
 /*
 
@@ -21,10 +21,12 @@ static const char *TAG = "TASKS";
 TaskHandle_t periodic_handler = NULL;
 periodic_params_t periodic_params;
 
+temperature_sensor_t *lm75a_temp_sensor;
+
 void send_temperature(void)
 {
     float temperature;
-    esp_err_t i2c_res = get_temperature_f(&temperature);
+    esp_err_t i2c_res = lm75a_temp_sensor->read_fahrenheit(lm75a_temp_sensor, &temperature);
     if (i2c_res == ESP_OK)
     {
         cJSON *payload_json = cJSON_CreateObject();
@@ -126,8 +128,10 @@ void read_device_config(const char *file_name, device_config_t *device_config)
     ESP_LOGI(TAG, "Device WiFi SSID: %s", device_config->wifi_ssid);
 }
 
-void init_tasks(void)
+void init_tasks(temperature_sensor_t *temp_sensor)
 {
+    lm75a_temp_sensor = temp_sensor;
+
     // configure the params
     periodic_params.period_ms = 1000; // 1 second
     periodic_params.periodic_cb = send_temperature;

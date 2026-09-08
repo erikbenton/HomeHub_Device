@@ -1,9 +1,7 @@
+#ifndef __LM75A_TEMPERATURE_SENSOR_H__
+#define __LM75A_TEMPERATURE_SENSOR_H__
 
-#ifndef __I2C_LM75A_H__
-#define __I2C_LM75A_H__
-
-#include "esp_err.h"
-#include "driver/i2c_master.h"
+#include "temperature_sensor_driver.h"
 
 // I2C Temp sensor pins/config
 #define I2C_MASTER_SCL_IO 4            /*!< GPIO number used for I2C master clock */
@@ -13,10 +11,8 @@
 #define I2C_MASTER_TX_BUF_DISABLE 0    /*!< I2C master doesn't need buffer */
 #define I2C_MASTER_RX_BUF_DISABLE 0    /*!< I2C master doesn't need buffer */
 #define I2C_MASTER_TIMEOUT_MS 1000
-#define LM75A_ADDRESS 0x48
 #define IS_NEG_TEMP (1 << 8U)
 
-void init_i2c_lm75a(void);
-esp_err_t get_temperature_f(float *temperature);
+void lm75a_create(temperature_sensor_t *sensor, lm75a_ctx_t *ctx);
 
 #endif
