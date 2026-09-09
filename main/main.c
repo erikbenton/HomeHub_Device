@@ -8,6 +8,7 @@
 #include "interfaces/sd_card_interface.h"
 #include "factories/temperature_sensor_factory.h"
 #include "factories/sd_card_factory.h"
+#include "contexts/lm75a_context.h"
 
 temperature_sensor_t temperature_sensor;
 lm75a_ctx_t lm75a_ctx;

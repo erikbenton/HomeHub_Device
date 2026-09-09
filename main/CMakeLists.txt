@@ -12,4 +12,5 @@ idf_component_register(
         "."
         "./interfaces"
         "./factories"
-        "./drivers")
+        "./drivers"
+        "./contexts")
