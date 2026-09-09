@@ -1,7 +1,7 @@
 #include "esp_log.h"
 #include "driver/i2c_master.h"
-#include "temperature_sensor_driver.h"
-#include "LM75A_temperature_sensor.h"
+#include "../interfaces/temperature_sensor_interface.h"
+#include "../drivers/lm75a_temperature_sensor_driver.h"
 
 static float factor = 0.125; // for temperature calculations
 static const char *TAG = "LM75A";

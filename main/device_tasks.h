@@ -2,7 +2,8 @@
 #define __DEVICE_TASKS_H__
 
 #include <stdint.h>
-#include "temperature_sensor_driver.h"
+#include "interfaces/temperature_sensor_interface.h"
+#include "interfaces/sd_card_interface.h"
 
 typedef struct DEVICE_CONFIG_STRUCT
 {
@@ -16,6 +17,6 @@ typedef struct DEVICE_CONFIG_STRUCT
 void init_tasks(temperature_sensor_t *temp_sensor);
 void stop_sending_temperature(void);
 void start_sending_temperature(void);
-void read_device_config(const char *file_name, device_config_t *device_config);
+void read_device_config(sd_card_t *sd_card, const char *file_name, device_config_t *device_config);
 
 #endif

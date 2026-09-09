@@ -1,5 +1,15 @@
 idf_component_register(
     SRCS
-        "main.c" "mqtt_device.c" "periodic_task.c" "device_tasks.c" "spi_sd_card.c" "temperature_sensor_driver.c" "LM75A_temperature_sensor.c"
+        "main.c"
+        "mqtt_device.c"
+        "periodic_task.c"
+        "device_tasks.c"
+        "./drivers/lm75a_temperature_sensor_driver.c"
+        "./factories/temperature_sensor_factory.c"
+        "./drivers/spi_sd_card_driver.c"
+        "./factories/sd_card_factory.c"
     INCLUDE_DIRS
-        ".")
+        "."
+        "./interfaces"
+        "./factories"
+        "./drivers")

@@ -7,8 +7,8 @@
 #include "esp_log.h"
 #include "cJSON.h"
 #include "mqtt_device.h"
-#include "spi_sd_card.h"
-#include "temperature_sensor_driver.h"
+#include "interfaces/temperature_sensor_interface.h"
+#include "interfaces/sd_card_interface.h"
 
 /*
 
@@ -67,7 +67,7 @@ void stop_sending_temperature(void)
     }
 }
 
-void read_device_config(const char *file_name, device_config_t *device_config)
+void read_device_config(sd_card_t *sd_card, const char *file_name, device_config_t *device_config)
 {
     // put this config on the heap temporarily
     const uint16_t size = 255 * 5;
@@ -78,7 +78,7 @@ void read_device_config(const char *file_name, device_config_t *device_config)
     sprintf(file_path, "/store/%s", file_name);
 
     // read the config file
-    sd_read_full_file(file_path, config, size);
+    sd_card->read_full_file(sd_card, file_path, config, size);
 
     // parse the JSON string
     cJSON *payload = cJSON_Parse(config);

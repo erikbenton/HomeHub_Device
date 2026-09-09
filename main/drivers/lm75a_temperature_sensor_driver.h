@@ -1,7 +1,7 @@
-#ifndef __LM75A_TEMPERATURE_SENSOR_H__
-#define __LM75A_TEMPERATURE_SENSOR_H__
+#ifndef __LM75A_TEMPERATURE_SENSOR_DRIVER_H__
+#define __LM75A_TEMPERATURE_SENSOR_DRIVER_H__
 
-#include "temperature_sensor_driver.h"
+#include "../interfaces/temperature_sensor_interface.h"
 
 // I2C Temp sensor pins/config
 #define I2C_MASTER_SCL_IO 4            /*!< GPIO number used for I2C master clock */

@@ -1,10 +1,10 @@
-#ifndef __TEMPERATURE_SENSOR_DRIVER_H__
-#define __TEMPERATURE_SENSOR_DRIVER_H__
+#ifndef __TEMPERATURE_SENSOR_INTERFACE_H__
+#define __TEMPERATURE_SENSOR_INTERFACE_H__
 
 #include "esp_err.h"
 #include "driver/i2c_master.h"
 
-#define LM75A "lm75a"
+#define LM75A_TYPE "lm75a"
 #define LM75A_DEFAULT_ADDRESS 0x48
 
 typedef struct TEMPERATURE_SENSOR_STRUCT temperature_sensor_t;
@@ -22,7 +22,5 @@ typedef struct LM75A_CTX_STRUCT
     uint8_t read_buffer[2];
     uint8_t i2c_address;
 } lm75a_ctx_t;
-
-void temperature_sensor_init(const char *type, temperature_sensor_t *sensor, void *ctx);
 
 #endif
