@@ -4,6 +4,7 @@ idf_component_register(
         "mqtt_device.c"
         "periodic_task.c"
         "device_tasks.c"
+        "memory_utils.c"
         "./drivers/lm75a_temperature_sensor_driver.c"
         "./factories/temperature_sensor_factory.c"
         "./drivers/spi_sd_card_driver.c"

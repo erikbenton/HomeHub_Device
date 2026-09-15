@@ -38,3 +38,15 @@ config  MQTT_DEVICE_ID
             this needs to be unique for each client device
 
 endmenu
+
+menu "Device Debug"
+
+config HEAP_MEM_DEBUG
+    bool "Print out heap memory status for debugging"
+    default n
+
+config HEAP_MEM_PERIOD
+    int "Period in milliseconds to print heap memory status"
+    default 1000
+
+endmenu

@@ -9,6 +9,7 @@
 #include "mqtt_device.h"
 #include "interfaces/temperature_sensor_interface.h"
 #include "interfaces/sd_card_interface.h"
+#include "memory_utils.h"
 
 /*
 
@@ -69,9 +70,15 @@ void stop_sending_temperature(void)
 
 void read_device_config(sd_card_t *sd_card, const char *file_name, device_config_t *device_config)
 {
+#ifdef CONFIG_HEAP_MEM_DEBUG
+    ESP_LOGI("HEAP", "Before reading SD card");
+    log_heap_status();
+#endif
+
     // put this config on the heap temporarily
     const uint16_t size = 255 * 5;
     char *config = (char *)malloc(size);
+    // char *config = (char *)heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
     char *file_path = (char *)malloc(255);
 
     // incase the user has a different file name
@@ -121,6 +128,11 @@ void read_device_config(sd_card_t *sd_card, const char *file_name, device_config
     free(config);
     free(file_path);
 
+#ifdef CONFIG_HEAP_MEM_DEBUG
+    ESP_LOGI("HEAP", "After reading SD card");
+    log_heap_status();
+#endif
+
     // print out the values being used
     ESP_LOGI(TAG, "Device ID: %d", device_config->id);
     ESP_LOGI(TAG, "Device Name: %s", device_config->name);
@@ -138,4 +150,9 @@ void init_tasks(temperature_sensor_t *temp_sensor)
 
     // Create the tasks
     xTaskCreate(periodic_task, "Periodic Task", 2048, (void *)&periodic_params, 1, &periodic_handler);
+
+#ifdef CONFIG_HEAP_MEM_DEBUG
+    create_heap_status_log_timer(CONFIG_HEAP_MEM_PERIOD);
+    start_heap_status_log_timer();
+#endif
 }
